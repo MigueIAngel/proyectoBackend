@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-
+const verifyToken = require('../middleware/auth');
 // POST request to create a new user
 router.post('/', userController.createUser);
 
@@ -10,10 +10,10 @@ router.post('/', userController.createUser);
 router.get('/:id', userController.getUserById);
 
 // PUT request to update a user
-router.put('/:id', userController.updateUser);
+router.put('/:id',verifyToken, userController.updateUser);
 
 // DELETE request to delete a user
-router.delete('/:id', userController.deleteUser);
+router.delete('/:id',verifyToken, userController.deleteUser);
 
 // POST request to login a user
 router.post('/login', userController.loginUser);

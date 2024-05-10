@@ -6,10 +6,6 @@ const orderSchema = new mongoose.Schema({
     book: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Book'
-    },
-    quantity: {
-      type: Number,
-      default: 1
     }
   }],
   user: {
@@ -28,7 +24,11 @@ const orderSchema = new mongoose.Schema({
   },
   completionDate: {
     type: Date
-  }
+  },
+  cancellationDate: {
+    type: Date
+  },
+ 
 });
 
 module.exports = mongoose.model('Order', orderSchema);

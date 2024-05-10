@@ -21,7 +21,14 @@ exports.getUserById = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const userId = req.params.id;
+    const loggedInUserId = req.user.id;
+
+    if (userId !== loggedInUserId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, req.body, { new: true });
     res.status(200).json(updatedUser);
   } catch (error) {
     res.status(400).json({ message: 'Error updating the user', error });
@@ -30,7 +37,17 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
+    const userId = req.params.id;
+    const loggedInUserId = req.user.id;
+
+    if (userId !== loggedInUserId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findById(userId);
+    user.deleted = true;
+    await user.save();
+
     res.status(204).json({ message: 'User deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting the user', error });

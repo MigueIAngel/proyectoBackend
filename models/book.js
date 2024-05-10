@@ -10,7 +10,11 @@ const bookSchema = new mongoose.Schema({
   },
   genre: String,
   publicationDate: Date,
-  publisher: String
+  publisher: String,
+  deleted: {
+    type: Boolean,
+    default: false
+  }
 });
 
 module.exports = mongoose.model('Book', bookSchema);

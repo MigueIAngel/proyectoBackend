@@ -23,7 +23,18 @@ exports.createBook = async (req, res) => {
   }
 };
 
-// controllers/bookController.js
+exports.getBookById = async (req, res) => {
+  try {
+    const book = await Book.findOne({ _id: req.params.id, deleted: false });
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+    res.status(200).json(book);
+  } catch (error) {
+    res.status(500).json({ message: 'Error getting the book', error });
+  }
+};
+
 exports.getAllBooks = async (req, res) => {
   try {
     const queryObj = { ...req.query };
@@ -40,21 +51,15 @@ exports.getAllBooks = async (req, res) => {
     if (queryObj.publisher) {
       queryObj.publisher = { $regex: queryObj.publisher, $options: "i" };
     }
-
+    if (queryObj.deleted) {
+      queryObj.deleted = queryObj.deleted === 'true';
+    } else {
+      queryObj.deleted = false;
+    }
     const books = await Book.find(queryObj);
     res.status(200).json(books);
   } catch (error) {
     res.status(500).json({ message: 'Error getting the books', error });
-  }
-};
-
-
-exports.getBookById = async (req, res) => {
-  try {
-    const book = await Book.findById(req.params.id);
-    res.status(200).json(book);
-  } catch (error) {
-    res.status(404).json({ message: 'Book not found', error });
   }
 };
 
@@ -77,7 +82,23 @@ exports.updateBook = async (req, res) => {
 
 exports.deleteBook = async (req, res) => {
   try {
-    await Book.findByIdAndDelete(req.params.id);
+    const book = await Book.findById(req.params.id);
+    
+    // Verificar si el libro ya está eliminado
+    if (book.deleted) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+    
+    // Verificar si el usuario autenticado es el autor del libro
+    const userId = req.user.id;
+    if (book.author._id.toString() !== userId) {
+      return res.status(403).json({ message: 'You are not authorized to delete this book' });
+    }
+    
+    // Marcar el libro como eliminado
+    book.deleted = true;
+    await book.save();
+    
     res.status(204).json({ message: 'Book deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting the book', error });

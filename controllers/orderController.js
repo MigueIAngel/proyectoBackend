@@ -3,21 +3,39 @@ const Order = require('../models/order');
 
 exports.createOrder = async (req, res) => {
   try {
-    const newOrder = await Order.create(req.body);
+    const newOrder = await Order.create({ ...req.body, user: req.user });
     res.status(201).json(newOrder);
   } catch (error) {
     res.status(400).json({ message: 'Error creating order', error });
   }
 };
 
+// controllers/orderController.js
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find();
+    const { startDate, endDate, status } = req.query;
+    let queryObj = {};
+
+    if (status) {
+      queryObj.status = status;
+    }
+    if (startDate || endDate) {
+      queryObj.orderDate = {};
+      if (startDate) {
+        queryObj.orderDate.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        queryObj.orderDate.$lte = new Date(endDate);
+      }
+    }
+
+    const orders = await Order.find(queryObj).populate('books.book');
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving orders', error });
   }
 };
+
 
 exports.getOrderById = async (req, res) => {
   try {

@@ -36,3 +36,25 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ message: 'Error deleting the user', error });
   }
 };
+
+// controllers/userController.js
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+exports.loginUser = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    const validPassword = await bcrypt.compare(req.body.password, user.password);
+    if (validPassword) {
+      const token = jwt.sign(
+        { id: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+      res.status(200).json({ auth: true, token });
+    } else {
+      res.status(401).json("Invalid Credentials");
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};

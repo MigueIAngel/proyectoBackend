@@ -7,7 +7,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Conexión a MongoDB
-mongoose.connect('mongodb://localhost/e-commerce-books', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb+srv://miguelaltamarr:20021123@cluster0.zsozdfh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(bodyParser.json());
 
